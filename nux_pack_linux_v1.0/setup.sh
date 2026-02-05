@@ -10,6 +10,28 @@ BIN_DIR="/usr/local/bin"
 LIB_DIR="/usr/local/lib/nux"
 CONFIG_DIR="/etc/nux"
 NUX_HOME="$HOME/.nux"
+REPO_URL="https://github.com/Nux-Lang/Nux_Linux.git"
+
+# Detect if running remotely (no local lib dir)
+if [ ! -d "$(dirname "$0")/../lib" ]; then
+    echo "Remote installation detected..."
+    if ! command -v git &> /dev/null; then
+        echo "Error: git is required for remote installation."
+        exit 1
+    fi
+    
+    TEMP_DIR=$(mktemp -d)
+    echo "Cloning repository to $TEMP_DIR..."
+    git clone --depth 1 "$REPO_URL" "$TEMP_DIR"
+    
+    echo "Running installer from temporary directory..."
+    # Execute the script from the cloned directory, preserving arguments
+    bash "$TEMP_DIR/nux_pack_linux_v1.0/setup.sh" "$@"
+    
+    # Cleanup
+    rm -rf "$TEMP_DIR"
+    exit $?
+fi
 
 # ╔══════════════════════════════════════════════════════════════╗
 # ║                        COLORS & STYLES                        ║
